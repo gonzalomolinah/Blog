@@ -17,6 +17,7 @@ Este repositorio contiene una plantilla de sitio web estilo **"Solid State"**, d
   - Efectos y animaciones: jQuery, Scrollex, Responsive Tools
 - Libre para uso personal o comercial bajo licencia **CCA 3.0**.
 - Hosting conectado directamente al repositorio gracias a GitHub Pages.
+- Dominio y DNS gestionados en NameCheap.
 
 ---
 
