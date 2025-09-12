@@ -1,6 +1,5 @@
-# Blog
+# [gonzalomolina.space](https://gonzalomolina.space)
 
-![Solid State Theme Preview](assets/preview.png) *(Reemplaza con una captura relevante si lo deseas)*
 
 ##  Descripción
 
@@ -17,6 +16,7 @@ Este repositorio contiene una plantilla de sitio web estilo **"Solid State"**, d
   - Íconos: Font Awesome
   - Efectos y animaciones: jQuery, Scrollex, Responsive Tools
 - Libre para uso personal o comercial bajo licencia **CCA 3.0**.
+- Hosting conectado directamente al repositorio gracias a GitHub Pages.
 
 ---
 
@@ -45,8 +45,7 @@ Blog/
    ```
 
 2. Abre `index.html` en tu navegador para visualizar la plantilla en acción.
-
-3. *(Opcional)* Si estás utilizando SCSS, asegúrate de tener configurado tu entorno para compilar los estilos.
+Nota: recomiendo usar la extensión Live Server para esto!
 
 ---
 
@@ -87,3 +86,4 @@ Este proyecto está bajo la licencia **Creative Commons Attribution 3.0 (CCA 3.0
 ##  Contacto
 
 Si tienes dudas, sugerencias o colaboraciones, no dudes en contactarme.
+yo@gonzalomolina.space
