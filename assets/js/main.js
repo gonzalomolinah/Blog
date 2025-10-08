@@ -20,14 +20,7 @@
 			xsmall:	'(max-width: 480px)'
 		});
 
-	// Play initial animations on page load.
-		$window.on('load', function() {
-			window.setTimeout(function() {
-				$body.removeClass('is-preload');
-			}, 100);
-		});
-
-	// Header.
+        // Header.
 		if ($banner.length > 0
 		&&	$header.hasClass('alt')) {
 
