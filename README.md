@@ -74,14 +74,6 @@ Este proyecto está bajo la licencia **Creative Commons Attribution 3.0 (CCA 3.0
 
 ---
 
-##  Contribuciones
-
-¡Eres bienvenido a contribuir! Puedes:
-
-- Proponer mejoras visuales o estructurales.
-- Agregar flujos de trabajo o despliegue (CI/CD).
-- Proponer nuevas funcionalidades o layouts.
-
 ---
 
 ##  Contacto
