@@ -916,3 +916,113 @@ body.is-menu-visible #menu .inner {
     flex-direction: column;
   }
 }
+
+/* Album */
+#banner.banner-alt {
+  background: linear-gradient(to top, var(--overlay), var(--overlay)), url("../../images/bgtemp.jpg") center/cover;
+}
+
+.gallery-section {
+  margin-top: 3.5em;
+  padding: 1.8em 1.8em 2.2em;
+  background: rgba(46, 49, 65, 0.85);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 1.8em 3em rgba(0, 0, 0, 0.22);
+}
+
+.gallery-section:first-of-type {
+  margin-top: 3em;
+}
+
+.gallery-section summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  margin: 0;
+  padding: 0;
+}
+
+.gallery-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.gallery-category {
+  font-size: 1em;
+  letter-spacing: 0.2em;
+  margin: 0;
+}
+
+.gallery-section summary::after {
+  content: "\f107";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: 0.9em;
+  transition: transform 0.3s ease;
+}
+
+.gallery-section[open] summary::after {
+  transform: rotate(-180deg);
+}
+
+.gallery-section[open] .gallery-masonry {
+  margin-top: 1.8em;
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+.gallery-section:not([open]) .gallery-masonry {
+  margin-top: 0;
+  visibility: hidden;
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.gallery-masonry {
+  column-count: 3;
+  column-gap: 1.8em;
+}
+
+.gallery-photo {
+  break-inside: avoid;
+  margin-bottom: 1.8em;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1.5em 3em rgba(0, 0, 0, 0.28);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gallery-photo img {
+  width: 100%;
+  display: block;
+}
+
+.gallery-photo:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 2em 3.5em rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 980px) {
+  .gallery-masonry {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 736px) {
+  .gallery-category {
+    letter-spacing: 0.15em;
+  }
+
+  .gallery-masonry {
+    column-count: 1;
+  }
+
+  .gallery-photo {
+    margin-bottom: 1.4em;
+  }
+}
