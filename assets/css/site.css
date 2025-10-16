@@ -680,13 +680,15 @@ body.is-menu-visible #menu .inner {
   flex: 1;
   max-width: 22em;
   margin-bottom: 2em;
-  border-radius: 50%;
+  border-radius: 18px;
   overflow: hidden;
 }
 
 .wrapper.spotlight .image img {
   display: block;
-  border-radius: 50%;
+  width: 100%;
+  height: auto;
+  border-radius: 0;
 }
 
 .wrapper.spotlight .content {
