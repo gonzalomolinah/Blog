@@ -7,16 +7,78 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link rel="stylesheet" href="assets/css/site.css" />
     <style>
-      .gallery-grid {
-        column-width: 320px;
-        column-gap: 14px;
-        max-width: 1280px;
-        margin: 0 auto;
+      .muted { opacity: 0.75; font-size: 0.95rem; }
+      .gallery-container { margin-top: 2rem; }
+      .gallery-status {
+        margin: 1rem 0 2rem;
+        transition: opacity 0.3s ease;
       }
-      .card { break-inside: avoid; margin: 0 0 14px; border-radius:8px; overflow:hidden; border:1px solid #eee; background:#fff; }
-      .card img { width:100%; height:auto; display:block; }
-      .card .meta { padding:8px 10px; font-size:.95rem; }
-      .muted { opacity:.7; }
+      .gallery-status.hidden {
+        display: none;
+      }
+      .gallery-status.error {
+        color: #ff8a80;
+      }
+      .gallery-status.empty {
+        padding: 1.75rem 1.25rem;
+        border: 1px dashed var(--border);
+        border-radius: 14px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(0, 0, 0, 0.2);
+      }
+      .gallery-grid {
+        display: grid;
+        gap: 1.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+      .card {
+        background: var(--surface);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: 0 24px 44px rgba(0, 0, 0, 0.35);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+      }
+      .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 32px 56px rgba(0, 0, 0, 0.45);
+      }
+      .card figure {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .card img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 0;
+      }
+      .card a {
+        border-bottom: none;
+      }
+      .card figcaption {
+        padding: 1.1rem 1.35rem;
+        border-top: 1px solid var(--border);
+        font-size: 1rem;
+        min-height: 3rem;
+        display: flex;
+        align-items: center;
+        letter-spacing: 0.03em;
+      }
+      .card figcaption span {
+        opacity: 0.85;
+      }
+      @media (max-width: 640px) {
+        .gallery-grid {
+          grid-template-columns: 1fr;
+        }
+        .card figcaption {
+          font-size: 0.95rem;
+        }
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -58,8 +120,11 @@
         <section class="wrapper style1">
           <div class="inner">
             <h2 class="major">Galería</h2>
-            <p class="muted">Las imágenes se optimizan vía la CDN de Supabase (<code>?width=1200&quality=80</code>).</p>
-            <div id="gallery" class="gallery-grid"></div>
+            <p class="muted">Las imágenes se optimizan vía la CDN de Supabase (<code>?width=1200&amp;quality=80</code>).</p>
+            <div class="gallery-container">
+              <p id="gallery-status" class="gallery-status muted">Cargando álbum...</p>
+              <div id="gallery" class="gallery-grid" role="list"></div>
+            </div>
           </div>
         </section>
       </section>
@@ -80,29 +145,125 @@
     </div>
 
     <script>
-      async function loadAlbum() {
-        const { data, error } = await supabase
-          .from('album_photos')
-          .select('*')
-          .order('position', { ascending: true })
-          .order('created_at', { ascending: true });
-        if (error) { console.error(error); return; }
+      document.addEventListener('DOMContentLoaded', () => {
         const gallery = document.getElementById('gallery');
-        gallery.innerHTML = '';
-        for (const ph of data) {
-          const url = `${SUPABASE_URL}/storage/v1/object/public/${ph.path}?width=1200&quality=80`;
-          const card = document.createElement('article');
-          card.className = 'card';
-          card.innerHTML = `
-            <a href="${url}" target="_blank" rel="noopener">
-              <img loading="lazy" src="${url}" alt="${ph.title ?? ''}">
-            </a>
-            <div class="meta">${ph.title ? ph.title : ''}</div>
-          `;
-          gallery.appendChild(card);
+        const status = document.getElementById('gallery-status');
+        const FALLBACK_IMG = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+        if (gallery) {
+          gallery.setAttribute('aria-live', 'polite');
+        } else {
+          return;
         }
-      }
-      loadAlbum();
+
+        function setStatus(message, variant = 'info') {
+          if (!status) return;
+          status.textContent = message || '';
+          status.className = 'gallery-status';
+          if (!message) {
+            status.classList.add('hidden');
+            return;
+          }
+          if (variant === 'error') {
+            status.classList.add('error');
+          } else if (variant === 'empty') {
+            status.classList.add('empty');
+          } else {
+            status.classList.add('muted');
+          }
+        }
+
+        function parseStoragePath(path) {
+          const safePath = (path || '').replace(/^\/+/, '');
+          const parts = safePath.split('/');
+          const bucket = parts.shift();
+          return { bucket, objectPath: parts.join('/') };
+        }
+
+        function getImageUrl(path, transform) {
+          const { bucket, objectPath } = parseStoragePath(path);
+          if (!bucket || !objectPath) return '';
+          const { data, error } = supabase.storage.from(bucket).getPublicUrl(
+            objectPath,
+            transform ? { transform } : undefined
+          );
+          if (error) {
+            console.warn('No se pudo generar la URL pública para', path, error);
+            return '';
+          }
+          return data && data.publicUrl ? data.publicUrl : '';
+        }
+
+        function renderGallery(photos) {
+          gallery.innerHTML = '';
+          if (!photos.length) {
+            gallery.classList.add('is-empty');
+            setStatus('Todavía no hay fotos publicadas. Vuelve pronto ✨', 'empty');
+            return;
+          }
+          gallery.classList.remove('is-empty');
+          const fragment = document.createDocumentFragment();
+          photos.forEach(photo => {
+            const article = document.createElement('article');
+            article.className = 'card';
+            article.setAttribute('role', 'listitem');
+
+            const figure = document.createElement('figure');
+
+            const fullUrl = getImageUrl(photo.path);
+            const displayUrl = getImageUrl(photo.path, { width: 1200, quality: 80 });
+            const effectiveUrl = displayUrl || fullUrl || FALLBACK_IMG;
+
+            const link = document.createElement('a');
+            if (fullUrl || displayUrl) {
+              link.href = fullUrl || displayUrl;
+              link.target = '_blank';
+              link.rel = 'noopener';
+            } else {
+              link.href = '#';
+            }
+
+            const titleRaw = photo.title && photo.title.trim();
+            const img = document.createElement('img');
+            img.src = effectiveUrl;
+            img.alt = titleRaw || 'Fotografía del álbum';
+            img.loading = 'lazy';
+
+            link.appendChild(img);
+            figure.appendChild(link);
+
+            const caption = document.createElement('figcaption');
+            caption.className = 'meta';
+            const captionSpan = document.createElement('span');
+            captionSpan.textContent = titleRaw || 'Sin título';
+            caption.appendChild(captionSpan);
+            figure.appendChild(caption);
+
+            article.appendChild(figure);
+            fragment.appendChild(article);
+          });
+          gallery.appendChild(fragment);
+          setStatus('', 'info');
+        }
+
+        async function loadAlbum() {
+          setStatus('Cargando álbum...', 'info');
+          try {
+            const { data, error } = await supabase
+              .from('album_photos')
+              .select('*')
+              .order('position', { ascending: true })
+              .order('created_at', { ascending: true });
+            if (error) throw error;
+            renderGallery(data || []);
+          } catch (error) {
+            console.error(error);
+            gallery.innerHTML = '';
+            setStatus(error.message || 'No se pudo cargar el álbum. Intenta nuevamente más tarde.', 'error');
+          }
+        }
+
+        loadAlbum();
+      });
     </script>
 
     <script src="assets/js/jquery.min.js"></script>
