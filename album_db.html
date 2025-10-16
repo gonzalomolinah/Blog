@@ -1,0 +1,115 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Gonzalo - Álbum</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="assets/css/site.css" />
+    <style>
+      .gallery-grid {
+        column-width: 320px;
+        column-gap: 14px;
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+      .card { break-inside: avoid; margin: 0 0 14px; border-radius:8px; overflow:hidden; border:1px solid #eee; background:#fff; }
+      .card img { width:100%; height:auto; display:block; }
+      .card .meta { padding:8px 10px; font-size:.95rem; }
+      .muted { opacity:.7; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      // TODO: Rellena con tus credenciales
+      const SUPABASE_URL = "https://qrymkghhwejkbvsrvkht.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyeW1rZ2hod2Vqa2J2c3J2a2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2MDM1MDYsImV4cCI6MjA3NjE3OTUwNn0.CJVE12mhbwogRhjV1fcEdB-2D_2gQOT6fZbeRAEagJE";
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    </script>
+  </head>
+  <body>
+    <div id="page-wrapper">
+      <header id="header">
+        <h1><a href="index.html">Gonzalo Molina</a></h1>
+        <nav><a href="#menu">Menú</a></nav>
+      </header>
+
+      <nav id="menu">
+        <div class="inner">
+          <h2>Menu</h2>
+          <ul class="links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="album.html">Álbum</a></li>
+            <li><a href="admin.html">Admin</a></li>
+            <li><a href="contact.html">Contacto</a></li>
+          </ul>
+          <a href="#" class="close">Close</a>
+        </div>
+      </nav>
+
+      <section id="banner" class="banner-alt">
+        <div class="inner">
+          <div class="logo"><span class="icon fa-camera"></span></div>
+          <h2>Álbum</h2>
+          <p>Se carga dinámicamente desde Supabase</p>
+        </div>
+      </section>
+
+      <section id="wrapper">
+        <section class="wrapper style1">
+          <div class="inner">
+            <h2 class="major">Galería</h2>
+            <p class="muted">Las imágenes se optimizan vía la CDN de Supabase (<code>?width=1200&quality=80</code>).</p>
+            <div id="gallery" class="gallery-grid"></div>
+          </div>
+        </section>
+      </section>
+
+      <section id="footer">
+        <div class="inner">
+          <h2 class="major">Contacto y Redes</h2>
+          <ul class="contact">
+            <li class="icon solid fa-envelope"><a href="mailto:yo@gonzalomolina.space">yo@gonzalomolina.space</a></li>
+            <li class="icon brands fa-instagram"><a href="https://instagram.com/gonzalomolinah">@gonzalomolinah</a></li>
+          </ul>
+          <ul class="copyright">
+            <li>&copy; Desarrollada por <a href="https://github.com/gonzalomolinah">Gonzalo Molina</a>. Todos los derechos reservados.</li>
+            <li>Diseño/Design: <a href="http://html5up.net">HTML5 UP</a></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      async function loadAlbum() {
+        const { data, error } = await supabase
+          .from('album_photos')
+          .select('*')
+          .order('position', { ascending: true })
+          .order('created_at', { ascending: true });
+        if (error) { console.error(error); return; }
+        const gallery = document.getElementById('gallery');
+        gallery.innerHTML = '';
+        for (const ph of data) {
+          const url = `${SUPABASE_URL}/storage/v1/object/public/${ph.path}?width=1200&quality=80`;
+          const card = document.createElement('article');
+          card.className = 'card';
+          card.innerHTML = `
+            <a href="${url}" target="_blank" rel="noopener">
+              <img loading="lazy" src="${url}" alt="${ph.title ?? ''}">
+            </a>
+            <div class="meta">${ph.title ? ph.title : ''}</div>
+          `;
+          gallery.appendChild(card);
+        }
+      }
+      loadAlbum();
+    </script>
+
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/jquery.scrollex.min.js"></script>
+    <script src="assets/js/browser.min.js"></script>
+    <script src="assets/js/breakpoints.min.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/main.js"></script>
+  </body>
+</html>

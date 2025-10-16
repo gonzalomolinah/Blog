@@ -1,0 +1,253 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Gonzalo - Admin Álbum</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="assets/css/site.css" />
+    <style>
+      .panel { max-width: 980px; margin: 24px auto; padding: 16px; border: 1px solid #ddd; border-radius: 8px; }
+      .bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+      .muted { opacity:.7; font-size:.9rem; }
+      .thumb { width: 92px; height: 92px; object-fit: cover; border-radius: 6px; }
+      .row { display:flex; gap:12px; align-items:center; border:1px solid #eee; padding:8px; margin:8px 0; border-radius:8px; background:#fff; }
+      .row .title { flex: 1 1 auto; min-width: 120px; }
+      #list { list-style: none; padding: 0; margin: 0; }
+      #list li { cursor: grab; }
+      #status { margin-left:auto; }
+      .danger { color:#c62828; }
+      .ok { color:#2e7d32; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      // TODO: Rellena con tus credenciales
+      const SUPABASE_URL = "https://qrymkghhwejkbvsrvkht.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyeW1rZ2hod2Vqa2J2c3J2a2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2MDM1MDYsImV4cCI6MjA3NjE3OTUwNn0.CJVE12mhbwogRhjV1fcEdB-2D_2gQOT6fZbeRAEagJE";
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    </script>
+  </head>
+  <body>
+    <div id="page-wrapper">
+      <header id="header">
+        <h1><a href="index.html">Gonzalo Molina</a></h1>
+        <nav><a href="#menu">Menú</a></nav>
+      </header>
+
+      <nav id="menu">
+        <div class="inner">
+          <h2>Menu</h2>
+          <ul class="links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="album.html">Álbum</a></li>
+            <li><a href="admin.html">Admin</a></li>
+            <li><a href="contact.html">Contacto</a></li>
+          </ul>
+          <a href="#" class="close">Close</a>
+        </div>
+      </nav>
+
+      <section id="banner" class="banner-alt">
+        <div class="inner">
+          <div class="logo"><span class="icon fa-lock"></span></div>
+          <h2>Panel Admin Álbum</h2>
+          <p>Login, subir, reordenar y borrar fotos</p>
+        </div>
+      </section>
+
+      <section id="wrapper">
+        <div class="inner panel">
+          <div class="bar">
+            <button id="login-google" class="button primary small"><i class="fab fa-google"></i> Entrar con Google</button>
+            <form id="login-email" class="bar" style="gap:4px">
+              <input name="email" type="email" placeholder="Email" required />
+              <input name="password" type="password" placeholder="Password" required />
+              <button class="button small">Entrar</button>
+            </form>
+            <button id="logout" class="button small" style="display:none"><i class="fas fa-sign-out-alt"></i> Salir</button>
+            <span id="status" class="muted"></span>
+          </div>
+
+          <hr/>
+
+          <div class="bar">
+            <input id="file" type="file" multiple accept="image/*" />
+            <button id="upload" class="button small" disabled>Subir</button>
+            <span class="muted">Sólo admins pueden subir</span>
+          </div>
+
+          <ul id="list"></ul>
+          <p class="muted">Arrastra para reordenar. Se guarda automáticamente.</p>
+        </div>
+      </section>
+
+      <section id="footer">
+        <div class="inner">
+          <h2 class="major">Contacto y Redes</h2>
+          <p class="muted">Volver al <a href="album.html">álbum</a>.</p>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const state = { session: null, admin: false, photos: [] };
+
+      function setStatus(text, ok=null) {
+        const el = document.getElementById('status');
+        el.textContent = text || '';
+        el.className = ok == null ? 'muted' : (ok ? 'ok' : 'danger');
+      }
+
+      async function checkSession() {
+        const { data: { session } } = await supabase.auth.getSession();
+        state.session = session;
+        document.getElementById('logout').style.display = session ? 'inline-block' : 'none';
+        document.getElementById('upload').disabled = !session;
+        if (session) await checkIsAdmin();
+        await loadPhotos(); render();
+      }
+      async function checkIsAdmin() {
+        try {
+          const { data, error } = await supabase.rpc('is_album_admin');
+          if (error) throw error;
+          state.admin = !!data;
+          setStatus(state.admin ? 'Admin verificado' : 'No eres admin', state.admin);
+        } catch (e) {
+          state.admin = false;
+          setStatus(e.message || 'Error comprobando permisos', false);
+        }
+      }
+
+      document.getElementById('login-google').onclick = async () => {
+        await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.href } });
+      };
+      document.getElementById('login-email').onsubmit = async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        const { error } = await supabase.auth.signInWithPassword({
+          email: f.get('email'), password: f.get('password')
+        });
+        if (error) setStatus(error.message, false);
+        else setStatus('Sesión iniciada', true);
+        await checkSession();
+      };
+      document.getElementById('logout').onclick = async () => {
+        await supabase.auth.signOut();
+        state.session = null; state.admin = false;
+        setStatus('Sesión cerrada', true);
+        await loadPhotos(); render();
+      };
+
+      async function loadPhotos() {
+        const { data, error } = await supabase
+          .from('album_photos')
+          .select('*')
+          .order('position', { ascending: true })
+          .order('created_at', { ascending: true });
+        if (!error) state.photos = data || [];
+      }
+
+      function render() {
+        const list = document.getElementById('list');
+        list.innerHTML = '';
+        for (const ph of state.photos) {
+          const li = document.createElement('li');
+          li.draggable = true;
+          li.dataset.id = ph.id;
+          const url = `${SUPABASE_URL}/storage/v1/object/public/${ph.path}?width=300&quality=70`;
+          li.innerHTML = `
+            <div class="row">
+              <img class="thumb" src="${url}" alt=""/>
+              <input value="${ph.title ?? ''}" data-id="${ph.id}" class="title" placeholder="Título" />
+              <span class="mono">#${ph.position}</span>
+              <button class="button small save" data-id="${ph.id}" title="Guardar título">💾</button>
+              <button class="button small danger delete" data-id="${ph.id}" title="Borrar">🗑️</button>
+            </div>`;
+          list.appendChild(li);
+        }
+        bindDnD(); bindActions();
+      }
+
+      function bindActions() {
+        document.querySelectorAll('.save').forEach(btn => btn.onclick = async () => {
+          const id = btn.dataset.id;
+          const title = document.querySelector(\`.title[data-id="\${id}"]\`).value;
+          const { error } = await supabase.from('album_photos').update({ title }).eq('id', id);
+          if (error) setStatus(error.message, false); else setStatus('Guardado ✔', true);
+        });
+        document.querySelectorAll('.delete').forEach(btn => btn.onclick = async () => {
+          const id = btn.dataset.id;
+          if (!confirm('¿Borrar esta foto?')) return;
+          const ph = state.photos.find(p => p.id === id);
+          const pathOnly = ph.path.replace(/^album\\//,''); // remove necesita path relativo al bucket
+          await supabase.storage.from('album').remove([pathOnly]);
+          await supabase.from('album_photos').delete().eq('id', id);
+          await loadPhotos(); render();
+          setStatus('Foto borrada', true);
+        });
+      }
+
+      function bindDnD() {
+        const list = document.getElementById('list');
+        let dragEl = null;
+        list.querySelectorAll('li').forEach(li => {
+          li.addEventListener('dragstart', () => dragEl = li);
+          li.addEventListener('dragover', e => e.preventDefault());
+          li.addEventListener('drop', async e => {
+            e.preventDefault();
+            if (!dragEl || dragEl === li) return;
+            if (dragEl.compareDocumentPosition(li) & Node.DOCUMENT_POSITION_FOLLOWING) {
+              list.insertBefore(dragEl, li.nextSibling);
+            } else {
+              list.insertBefore(dragEl, li);
+            }
+            await persistOrder();
+          });
+        });
+      }
+
+      async function persistOrder() {
+        const ids = [...document.querySelectorAll('#list li')].map((li, idx) => ({ id: li.dataset.id, position: idx }));
+        const { error } = await supabase.from('album_photos').upsert(ids);
+        if (error) setStatus(error.message, false); else setStatus('Orden actualizado', true);
+        await loadPhotos(); render();
+      }
+
+      document.getElementById('upload').onclick = async () => {
+        if (!state.session) return alert('Inicia sesión.');
+        if (!state.admin) return alert('No eres admin.');
+        const files = [...document.getElementById('file').files];
+        if (!files.length) return;
+        const basePos = (state.photos.at(-1)?.position ?? -1) + 1;
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          const filename = `${crypto.randomUUID()}-${f.name}`;
+          const { error: upErr } = await supabase.storage.from('album').upload(filename, f, { upsert: false });
+          if (upErr) { setStatus(upErr.message, false); continue; }
+          const fullPath = `album/${filename}`;
+          const { error: dbErr } = await supabase.from('album_photos').insert({
+            path: fullPath,
+            title: f.name,
+            position: basePos + i,
+            user_id: state.session.user.id
+          });
+          if (dbErr) setStatus(dbErr.message, false);
+        }
+        document.getElementById('file').value = '';
+        await loadPhotos(); render();
+        setStatus('Subida completada', true);
+      };
+
+      supabase.auth.onAuthStateChange(async (_event, session) => {
+        state.session = session;
+        document.getElementById('logout').style.display = session ? 'inline-block' : 'none';
+        document.getElementById('upload').disabled = !session;
+        if (session) await checkIsAdmin();
+        await loadPhotos(); render();
+      });
+
+      (async () => { await checkSession(); })();
+    </script>
+  </body>
+</html>
