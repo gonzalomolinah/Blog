@@ -222,7 +222,7 @@
           <ul class="links">
             <li><a href="index.html">Home</a></li>
             <li><a href="album.html">Álbum</a></li>
-            <li><a href="admin.html">Admin</a></li>
+            <li><a href="admin.html">Iniciar sesión</a></li>
             <li><a href="contact.html">Contacto</a></li>
           </ul>
           <a href="#" class="close">Close</a>
@@ -249,7 +249,7 @@
                   <input name="password" type="password" placeholder="Password" required />
                   <button class="button small" type="submit">Entrar</button>
                 </form>
-                <button id="logout" class="button small" style="display:none"><i class="fas fa-sign-out-alt"></i> Salir</button>
+                <button id="logout" class="button small" style="display:none"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
                 <span id="status" class="admin-status muted"></span>
               </div>
 
@@ -603,7 +603,9 @@
           state.session = session;
           if (!session) {
             state.admin = false;
-            setStatus('Sesión cerrada.', 'info');
+            if (!elements.status.textContent) {
+              setStatus('Sesión cerrada.', 'info');
+            }
           }
           updateAuthUI();
           if (session) await checkIsAdmin();
@@ -646,8 +648,18 @@
         });
 
         elements.logout.addEventListener('click', async () => {
-          await supabase.auth.signOut();
-          await handleSessionChange(null);
+          try {
+            elements.logout.disabled = true;
+            setStatus('Cerrando sesión...');
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+            await handleSessionChange(null);
+            setStatus('Sesión cerrada.', 'success');
+          } catch (error) {
+            setStatus(error.message || 'No se pudo cerrar sesión.', 'error');
+          } finally {
+            elements.logout.disabled = false;
+          }
         });
 
         elements.fileInput.addEventListener('change', updateUploadState);
