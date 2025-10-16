@@ -7,18 +7,199 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link rel="stylesheet" href="assets/css/site.css" />
     <style>
-      .panel { max-width: 980px; margin: 24px auto; padding: 16px; border: 1px solid #ddd; border-radius: 8px; }
-      .bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-      .muted { opacity:.7; font-size:.9rem; }
-      .thumb { width: 92px; height: 92px; object-fit: cover; border-radius: 6px; }
-      .row { display:flex; gap:12px; align-items:center; border:1px solid #eee; padding:8px; margin:8px 0; border-radius:8px; background:#fff; }
-      .row .title { flex: 1 1 auto; min-width: 120px; }
-      #list { list-style: none; padding: 0; margin: 0; }
-      #list li { cursor: grab; }
-      #status { margin-left:auto; }
-      .danger { color:#c62828; }
-      .ok { color:#2e7d32; }
-      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .muted { opacity: 0.75; font-size: 0.95rem; }
+      .admin-panel {
+        max-width: 1080px;
+        margin: 3rem auto;
+        padding: 2.5rem;
+        background: var(--surface);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+      }
+      .admin-panel h3 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+      }
+      .admin-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+      }
+      .admin-toolbar form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .admin-toolbar input[type="email"],
+      .admin-toolbar input[type="password"] {
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.55rem 0.75rem;
+        color: var(--text);
+        min-width: 220px;
+      }
+      .admin-toolbar input[type="email"]:disabled,
+      .admin-toolbar input[type="password"]:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .admin-status {
+        margin-left: auto;
+        min-height: 1.2em;
+      }
+      .status-ok { color: #8be1ae; }
+      .status-error { color: #ff8a80; }
+      .admin-upload {
+        margin-top: 2rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .admin-upload input[type="file"] {
+        padding: 0.85rem 1rem;
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.2);
+        color: var(--text);
+        cursor: pointer;
+      }
+      .admin-upload input[type="file"]:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(155, 241, 255, 0.18);
+        text-transform: uppercase;
+      }
+      .admin-gallery {
+        margin-top: 2rem;
+      }
+      .admin-gallery ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 1rem;
+      }
+      .admin-gallery ul.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      .admin-gallery li {
+        background: rgba(0, 0, 0, 0.25);
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        padding: 0.85rem;
+        cursor: grab;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .admin-gallery li:active {
+        cursor: grabbing;
+      }
+      .admin-gallery li.dragging {
+        opacity: 0.55;
+        transform: scale(0.98);
+        box-shadow: 0 16px 28px rgba(0, 0, 0, 0.35);
+      }
+      .admin-row {
+        display: grid;
+        grid-template-columns: auto minmax(160px, 1fr) auto auto auto;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .admin-row img {
+        width: 96px;
+        height: 96px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+      }
+      .admin-row input.title {
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        padding: 0.6rem 0.75rem;
+        color: var(--text);
+        width: 100%;
+      }
+      .admin-row input.title:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .admin-row .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.85rem;
+        opacity: 0.7;
+      }
+      .admin-row button.button {
+        white-space: nowrap;
+      }
+      .admin-row button.button.danger {
+        background: rgba(198, 40, 40, 0.85);
+        border-color: rgba(198, 40, 40, 0.45);
+      }
+      .admin-row button.button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      .admin-gallery-empty {
+        padding: 2rem 1rem;
+        text-align: center;
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+        color: rgba(255, 255, 255, 0.75);
+      }
+      .helper-text {
+        margin-top: 0.5rem;
+      }
+      @media (max-width: 980px) {
+        .admin-panel {
+          padding: 2rem;
+        }
+        .admin-row {
+          grid-template-columns: auto minmax(120px, 1fr) auto;
+          grid-template-areas:
+            "thumb title title"
+            "thumb info actions";
+        }
+      }
+      @media (max-width: 720px) {
+        .admin-panel {
+          padding: 1.75rem;
+        }
+        .admin-toolbar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .admin-toolbar form,
+        .admin-toolbar button,
+        .admin-upload {
+          width: 100%;
+        }
+        .admin-status {
+          margin-left: 0;
+        }
+        .admin-row {
+          grid-template-columns: minmax(0, 1fr);
+          text-align: center;
+        }
+        .admin-row img {
+          justify-self: center;
+        }
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -57,29 +238,36 @@
       </section>
 
       <section id="wrapper">
-        <div class="inner panel">
-          <div class="bar">
-            <button id="login-google" class="button primary small"><i class="fab fa-google"></i> Entrar con Google</button>
-            <form id="login-email" class="bar" style="gap:4px">
-              <input name="email" type="email" placeholder="Email" required />
-              <input name="password" type="password" placeholder="Password" required />
-              <button class="button small">Entrar</button>
-            </form>
-            <button id="logout" class="button small" style="display:none"><i class="fas fa-sign-out-alt"></i> Salir</button>
-            <span id="status" class="muted"></span>
+        <section class="wrapper style1">
+          <div class="inner">
+            <div class="admin-panel">
+              <h3 class="major">Gestión del Álbum</h3>
+              <div class="admin-toolbar">
+                <button id="login-google" class="button primary small"><i class="fab fa-google"></i> Entrar con Google</button>
+                <form id="login-email">
+                  <input name="email" type="email" placeholder="Email" required />
+                  <input name="password" type="password" placeholder="Password" required />
+                  <button class="button small" type="submit">Entrar</button>
+                </form>
+                <button id="logout" class="button small" style="display:none"><i class="fas fa-sign-out-alt"></i> Salir</button>
+                <span id="status" class="admin-status muted"></span>
+              </div>
+
+              <div class="admin-upload">
+                <span class="badge"><i class="fas fa-user-shield"></i> Solo administradores</span>
+                <input id="file" type="file" multiple accept="image/*" disabled />
+                <button id="upload" class="button small" type="button" disabled>Subir</button>
+              </div>
+
+              <p id="admin-hint" class="muted helper-text"></p>
+
+              <div class="admin-gallery">
+                <ul id="list"></ul>
+                <p id="reorder-hint" class="muted helper-text">Arrastra para reordenar. Se guarda automáticamente.</p>
+              </div>
+            </div>
           </div>
-
-          <hr/>
-
-          <div class="bar">
-            <input id="file" type="file" multiple accept="image/*" />
-            <button id="upload" class="button small" disabled>Subir</button>
-            <span class="muted">Sólo admins pueden subir</span>
-          </div>
-
-          <ul id="list"></ul>
-          <p class="muted">Arrastra para reordenar. Se guarda automáticamente.</p>
-        </div>
+        </section>
       </section>
 
       <section id="footer">
@@ -90,164 +278,389 @@
       </section>
     </div>
 
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/jquery.scrollex.min.js"></script>
+    <script src="assets/js/browser.min.js"></script>
+    <script src="assets/js/breakpoints.min.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/main.js"></script>
+
     <script>
-      const state = { session: null, admin: false, photos: [] };
+      document.addEventListener('DOMContentLoaded', () => {
+        const state = { session: null, admin: false, photos: [] };
+        const elements = {
+          loginGoogle: document.getElementById('login-google'),
+          loginForm: document.getElementById('login-email'),
+          logout: document.getElementById('logout'),
+          status: document.getElementById('status'),
+          fileInput: document.getElementById('file'),
+          uploadButton: document.getElementById('upload'),
+          list: document.getElementById('list'),
+          adminHint: document.getElementById('admin-hint'),
+          reorderHint: document.getElementById('reorder-hint')
+        };
+        let dragSource = null;
 
-      function setStatus(text, ok=null) {
-        const el = document.getElementById('status');
-        el.textContent = text || '';
-        el.className = ok == null ? 'muted' : (ok ? 'ok' : 'danger');
-      }
-
-      async function checkSession() {
-        const { data: { session } } = await supabase.auth.getSession();
-        state.session = session;
-        document.getElementById('logout').style.display = session ? 'inline-block' : 'none';
-        document.getElementById('upload').disabled = !session;
-        if (session) await checkIsAdmin();
-        await loadPhotos(); render();
-      }
-      async function checkIsAdmin() {
-        try {
-          const { data, error } = await supabase.rpc('is_album_admin');
-          if (error) throw error;
-          state.admin = !!data;
-          setStatus(state.admin ? 'Admin verificado' : 'No eres admin', state.admin);
-        } catch (e) {
-          state.admin = false;
-          setStatus(e.message || 'Error comprobando permisos', false);
+        function setStatus(message, type = 'info') {
+          const el = elements.status;
+          if (!el) return;
+          el.textContent = message || '';
+          el.classList.remove('status-ok', 'status-error', 'muted');
+          if (!message) {
+            el.classList.add('muted');
+            return;
+          }
+          if (type === 'success') {
+            el.classList.add('status-ok');
+          } else if (type === 'error') {
+            el.classList.add('status-error');
+          } else {
+            el.classList.add('muted');
+          }
         }
-      }
 
-      document.getElementById('login-google').onclick = async () => {
-        await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.href } });
-      };
-      document.getElementById('login-email').onsubmit = async (e) => {
-        e.preventDefault();
-        const f = new FormData(e.target);
-        const { error } = await supabase.auth.signInWithPassword({
-          email: f.get('email'), password: f.get('password')
-        });
-        if (error) setStatus(error.message, false);
-        else setStatus('Sesión iniciada', true);
-        await checkSession();
-      };
-      document.getElementById('logout').onclick = async () => {
-        await supabase.auth.signOut();
-        state.session = null; state.admin = false;
-        setStatus('Sesión cerrada', true);
-        await loadPhotos(); render();
-      };
-
-      async function loadPhotos() {
-        const { data, error } = await supabase
-          .from('album_photos')
-          .select('*')
-          .order('position', { ascending: true })
-          .order('created_at', { ascending: true });
-        if (!error) state.photos = data || [];
-      }
-
-      function render() {
-        const list = document.getElementById('list');
-        list.innerHTML = '';
-        for (const ph of state.photos) {
-          const li = document.createElement('li');
-          li.draggable = true;
-          li.dataset.id = ph.id;
-          const url = `${SUPABASE_URL}/storage/v1/object/public/${ph.path}?width=300&quality=70`;
-          li.innerHTML = `
-            <div class="row">
-              <img class="thumb" src="${url}" alt=""/>
-              <input value="${ph.title ?? ''}" data-id="${ph.id}" class="title" placeholder="Título" />
-              <span class="mono">#${ph.position}</span>
-              <button class="button small save" data-id="${ph.id}" title="Guardar título">💾</button>
-              <button class="button small danger delete" data-id="${ph.id}" title="Borrar">🗑️</button>
-            </div>`;
-          list.appendChild(li);
+        function parseStoragePath(path) {
+          const safePath = (path || '').replace(/^\/+/, '');
+          const parts = safePath.split('/');
+          const bucket = parts.shift();
+          return { bucket, objectPath: parts.join('/') };
         }
-        bindDnD(); bindActions();
-      }
 
-      function bindActions() {
-        document.querySelectorAll('.save').forEach(btn => btn.onclick = async () => {
-          const id = btn.dataset.id;
-          const title = document.querySelector(\`.title[data-id="\${id}"]\`).value;
-          const { error } = await supabase.from('album_photos').update({ title }).eq('id', id);
-          if (error) setStatus(error.message, false); else setStatus('Guardado ✔', true);
-        });
-        document.querySelectorAll('.delete').forEach(btn => btn.onclick = async () => {
-          const id = btn.dataset.id;
-          if (!confirm('¿Borrar esta foto?')) return;
-          const ph = state.photos.find(p => p.id === id);
-          const pathOnly = ph.path.replace(/^album\\//,''); // remove necesita path relativo al bucket
-          await supabase.storage.from('album').remove([pathOnly]);
-          await supabase.from('album_photos').delete().eq('id', id);
-          await loadPhotos(); render();
-          setStatus('Foto borrada', true);
-        });
-      }
+        function getImageUrl(path, transform) {
+          const { bucket, objectPath } = parseStoragePath(path);
+          if (!bucket || !objectPath) return '';
+          const { data, error } = supabase.storage.from(bucket).getPublicUrl(
+            objectPath,
+            transform ? { transform } : undefined
+          );
+          if (error) {
+            console.warn('No se pudo generar la URL pública para', path, error);
+            return '';
+          }
+          return data && data.publicUrl ? data.publicUrl : '';
+        }
 
-      function bindDnD() {
-        const list = document.getElementById('list');
-        let dragEl = null;
-        list.querySelectorAll('li').forEach(li => {
-          li.addEventListener('dragstart', () => dragEl = li);
-          li.addEventListener('dragover', e => e.preventDefault());
-          li.addEventListener('drop', async e => {
-            e.preventDefault();
-            if (!dragEl || dragEl === li) return;
-            if (dragEl.compareDocumentPosition(li) & Node.DOCUMENT_POSITION_FOLLOWING) {
-              list.insertBefore(dragEl, li.nextSibling);
-            } else {
-              list.insertBefore(dragEl, li);
+        function updateUploadState() {
+          const canAdmin = Boolean(state.session && state.admin);
+          elements.uploadButton.disabled = !(canAdmin && elements.fileInput.files.length);
+        }
+
+        function updateAuthUI() {
+          const hasSession = Boolean(state.session);
+          const canAdmin = Boolean(state.session && state.admin);
+
+          elements.loginGoogle.style.display = hasSession ? 'none' : 'inline-flex';
+          elements.loginForm.style.display = hasSession ? 'none' : 'flex';
+          elements.loginForm.querySelectorAll('input').forEach(input => {
+            input.disabled = hasSession;
+          });
+          elements.logout.style.display = hasSession ? 'inline-flex' : 'none';
+
+          elements.fileInput.disabled = !canAdmin;
+          updateUploadState();
+
+          elements.adminHint.textContent = canAdmin
+            ? 'Tienes permisos completos para gestionar el álbum.'
+            : 'Inicia sesión con una cuenta autorizada para subir, editar, reordenar o borrar fotos.';
+
+          elements.list.classList.toggle('disabled', !canAdmin);
+          elements.reorderHint.style.display = canAdmin && state.photos.length > 1 ? '' : 'none';
+
+          elements.list.querySelectorAll('input.title').forEach(input => {
+            input.disabled = !canAdmin;
+          });
+          elements.list.querySelectorAll('button').forEach(btn => {
+            btn.disabled = !canAdmin;
+          });
+        }
+
+        async function refreshPhotos(showFeedback = false) {
+          try {
+            if (showFeedback) setStatus('Cargando fotos...');
+            const { data, error } = await supabase
+              .from('album_photos')
+              .select('*')
+              .order('position', { ascending: true })
+              .order('created_at', { ascending: true });
+            if (error) throw error;
+            state.photos = data || [];
+            renderPhotos();
+            if (showFeedback) setStatus(`Se cargaron ${state.photos.length} fotos.`, 'success');
+          } catch (error) {
+            state.photos = [];
+            renderPhotos();
+            setStatus(error.message || 'No se pudo cargar el álbum.', 'error');
+          }
+        }
+
+        function renderPhotos() {
+          const list = elements.list;
+          list.innerHTML = '';
+          if (!state.photos.length) {
+            const empty = document.createElement('li');
+            empty.className = 'admin-gallery-empty';
+            empty.textContent = 'Todavía no hay fotos cargadas. Cuando subas imágenes aparecerán aquí.';
+            list.appendChild(empty);
+            updateAuthUI();
+            return;
+          }
+
+          state.photos.forEach((photo, index) => {
+            const li = document.createElement('li');
+            li.dataset.id = photo.id;
+
+            const row = document.createElement('div');
+            row.className = 'admin-row';
+
+            const img = document.createElement('img');
+            img.alt = photo.title || `Foto ${index + 1}`;
+            img.loading = 'lazy';
+            const thumbUrl = getImageUrl(photo.path, { width: 360, quality: 70 });
+            img.src = thumbUrl || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
+            const titleInput = document.createElement('input');
+            titleInput.className = 'title';
+            titleInput.value = photo.title != null ? photo.title : '';
+            titleInput.placeholder = 'Título';
+
+            const position = document.createElement('span');
+            position.className = 'mono';
+            const posNumber = Number.isFinite(photo.position) ? photo.position : index;
+            position.textContent = `#${posNumber}`;
+
+            const saveButton = document.createElement('button');
+            saveButton.className = 'button small save';
+            saveButton.type = 'button';
+            saveButton.innerHTML = '<i class="fas fa-save"></i>';
+            saveButton.title = 'Guardar título';
+            saveButton.addEventListener('click', () => handleSave(photo.id, titleInput.value.trim()));
+
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'button small danger delete';
+            deleteButton.type = 'button';
+            deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            deleteButton.title = 'Borrar foto';
+            deleteButton.addEventListener('click', () => handleDelete(photo.id));
+
+            row.appendChild(img);
+            row.appendChild(titleInput);
+            row.appendChild(position);
+            row.appendChild(saveButton);
+            row.appendChild(deleteButton);
+            li.appendChild(row);
+
+            if (state.session && state.admin) {
+              li.draggable = true;
+              li.addEventListener('dragstart', () => {
+                dragSource = li;
+                li.classList.add('dragging');
+              });
+              li.addEventListener('dragend', () => {
+                dragSource = null;
+                li.classList.remove('dragging');
+              });
+              li.addEventListener('dragover', event => {
+                event.preventDefault();
+              });
+              li.addEventListener('drop', event => {
+                event.preventDefault();
+                if (!dragSource || dragSource === li) return;
+                const rect = li.getBoundingClientRect();
+                const after = (event.clientY - rect.top) > rect.height / 2;
+                elements.list.insertBefore(dragSource, after ? li.nextSibling : li);
+                persistOrder();
+              });
             }
-            await persistOrder();
+
+            list.appendChild(li);
+          });
+
+          updateAuthUI();
+        }
+
+        async function handleSave(id, title) {
+          if (!(state.session && state.admin)) {
+            setStatus('No tienes permisos para guardar cambios.', 'error');
+            return;
+          }
+          try {
+            const { error } = await supabase.from('album_photos').update({ title }).eq('id', id);
+            if (error) throw error;
+            const match = state.photos.find(p => String(p.id) === String(id));
+            if (match) match.title = title;
+            setStatus('Título actualizado.', 'success');
+          } catch (error) {
+            setStatus(error.message || 'No se pudo actualizar el título.', 'error');
+          }
+        }
+
+        async function handleDelete(id) {
+          if (!(state.session && state.admin)) {
+            setStatus('No tienes permisos para borrar fotos.', 'error');
+            return;
+          }
+          const photo = state.photos.find(p => String(p.id) === String(id));
+          if (!photo) {
+            setStatus('No se encontró la foto seleccionada.', 'error');
+            return;
+          }
+          if (!confirm('¿Borrar esta foto definitivamente?')) return;
+          try {
+            const { bucket, objectPath } = parseStoragePath(photo.path);
+            if (bucket && objectPath) {
+              const { error: storageError } = await supabase.storage.from(bucket).remove([objectPath]);
+              if (storageError) throw storageError;
+            }
+            const { error } = await supabase.from('album_photos').delete().eq('id', id);
+            if (error) throw error;
+            setStatus('Foto borrada.', 'success');
+            await refreshPhotos();
+          } catch (error) {
+            setStatus(error.message || 'No se pudo borrar la foto.', 'error');
+          }
+        }
+
+        async function persistOrder() {
+          if (!(state.session && state.admin)) return;
+          const ordered = Array.from(elements.list.querySelectorAll('li'))
+            .filter(item => item.dataset.id)
+            .map((item, index) => ({ id: item.dataset.id, position: index }));
+          if (!ordered.length) return;
+          try {
+            const { error } = await supabase.from('album_photos').upsert(ordered, { onConflict: 'id' });
+            if (error) throw error;
+            state.photos = ordered.map(({ id, position }) => {
+              const current = state.photos.find(p => String(p.id) === String(id));
+              return current ? { ...current, position } : null;
+            }).filter(Boolean);
+            renderPhotos();
+            setStatus('Orden actualizado.', 'success');
+          } catch (error) {
+            setStatus(error.message || 'No se pudo guardar el nuevo orden.', 'error');
+            await refreshPhotos();
+          }
+        }
+
+        async function uploadPhotos() {
+          if (!(state.session && state.admin)) {
+            setStatus('No tienes permisos para subir fotos.', 'error');
+            return;
+          }
+          const files = Array.from(elements.fileInput.files);
+          if (!files.length) return;
+          const lastPosition = state.photos.reduce((max, photo) => Math.max(max, Number(photo.position) || 0), -1);
+          try {
+            for (let index = 0; index < files.length; index++) {
+              const file = files[index];
+              const extension = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.') + 1) : '';
+              const sanitized = file.name.replace(/\s+/g, '-');
+              const objectName = `${crypto.randomUUID()}-${sanitized}`;
+              setStatus(`Subiendo ${index + 1} de ${files.length}...`);
+              const { error: uploadError } = await supabase.storage
+                .from('album')
+                .upload(objectName, file, { upsert: false, contentType: file.type });
+              if (uploadError) {
+                setStatus(uploadError.message, 'error');
+                continue;
+              }
+              const path = `album/${objectName}`;
+              const defaultTitle = extension ? file.name.replace(new RegExp(`\\.${extension}$`, 'i'), '') : file.name;
+              const { error: insertError } = await supabase.from('album_photos').insert({
+                path,
+                title: defaultTitle,
+                position: lastPosition + 1 + index,
+                user_id: state.session.user.id
+              });
+              if (insertError) setStatus(insertError.message, 'error');
+            }
+            elements.fileInput.value = '';
+            updateUploadState();
+            await refreshPhotos();
+            setStatus('Subida completada.', 'success');
+          } catch (error) {
+            setStatus(error.message || 'No se pudieron subir las fotos.', 'error');
+          }
+        }
+
+        async function checkIsAdmin() {
+          try {
+            const { data, error } = await supabase.rpc('is_album_admin');
+            if (error) throw error;
+            state.admin = Boolean(data);
+            setStatus(
+              state.admin ? 'Rol de administrador verificado.' : 'Tu cuenta tiene acceso limitado.',
+              state.admin ? 'success' : 'info'
+            );
+          } catch (error) {
+            state.admin = false;
+            setStatus(error.message || 'No se pudo validar el rol del usuario.', 'error');
+          } finally {
+            updateAuthUI();
+          }
+        }
+
+        async function handleSessionChange(session) {
+          state.session = session;
+          if (!session) {
+            state.admin = false;
+            setStatus('Sesión cerrada.', 'info');
+          }
+          updateAuthUI();
+          if (session) await checkIsAdmin();
+          await refreshPhotos(!state.photos.length);
+        }
+
+        async function checkSession() {
+          try {
+            const { data, error } = await supabase.auth.getSession();
+            if (error) throw error;
+            await handleSessionChange(data.session);
+          } catch (error) {
+            setStatus(error.message || 'No se pudo verificar la sesión.', 'error');
+            await refreshPhotos(true);
+          }
+        }
+
+        elements.loginGoogle.addEventListener('click', async () => {
+          await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.href }
           });
         });
-      }
 
-      async function persistOrder() {
-        const ids = [...document.querySelectorAll('#list li')].map((li, idx) => ({ id: li.dataset.id, position: idx }));
-        const { error } = await supabase.from('album_photos').upsert(ids);
-        if (error) setStatus(error.message, false); else setStatus('Orden actualizado', true);
-        await loadPhotos(); render();
-      }
+        elements.loginForm.addEventListener('submit', async event => {
+          event.preventDefault();
+          const formData = new FormData(event.target);
+          try {
+            const { error } = await supabase.auth.signInWithPassword({
+              email: formData.get('email'),
+              password: formData.get('password')
+            });
+            if (error) throw error;
+            setStatus('Sesión iniciada correctamente.', 'success');
+            event.target.reset();
+          } catch (error) {
+            setStatus(error.message || 'No se pudo iniciar sesión.', 'error');
+          }
+          await checkSession();
+        });
 
-      document.getElementById('upload').onclick = async () => {
-        if (!state.session) return alert('Inicia sesión.');
-        if (!state.admin) return alert('No eres admin.');
-        const files = [...document.getElementById('file').files];
-        if (!files.length) return;
-        const basePos = (state.photos.at(-1)?.position ?? -1) + 1;
-        for (let i = 0; i < files.length; i++) {
-          const f = files[i];
-          const filename = `${crypto.randomUUID()}-${f.name}`;
-          const { error: upErr } = await supabase.storage.from('album').upload(filename, f, { upsert: false });
-          if (upErr) { setStatus(upErr.message, false); continue; }
-          const fullPath = `album/${filename}`;
-          const { error: dbErr } = await supabase.from('album_photos').insert({
-            path: fullPath,
-            title: f.name,
-            position: basePos + i,
-            user_id: state.session.user.id
-          });
-          if (dbErr) setStatus(dbErr.message, false);
-        }
-        document.getElementById('file').value = '';
-        await loadPhotos(); render();
-        setStatus('Subida completada', true);
-      };
+        elements.logout.addEventListener('click', async () => {
+          await supabase.auth.signOut();
+          await handleSessionChange(null);
+        });
 
-      supabase.auth.onAuthStateChange(async (_event, session) => {
-        state.session = session;
-        document.getElementById('logout').style.display = session ? 'inline-block' : 'none';
-        document.getElementById('upload').disabled = !session;
-        if (session) await checkIsAdmin();
-        await loadPhotos(); render();
+        elements.fileInput.addEventListener('change', updateUploadState);
+        elements.uploadButton.addEventListener('click', uploadPhotos);
+
+        supabase.auth.onAuthStateChange(async (_event, session) => {
+          await handleSessionChange(session);
+        });
+
+        updateAuthUI();
+        checkSession();
       });
-
-      (async () => { await checkSession(); })();
     </script>
+
   </body>
 </html>
