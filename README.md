@@ -1,82 +1,55 @@
-# [gonzalomolina.space](https://gonzalomolina.space)
+# blog · gonzalomolina.space
 
+Sitio personal estático de Gonzalo Molina, basado en la plantilla **Solid State** de HTML5 UP y desplegado con GitHub Pages.
 
-##  Descripción
+## Qué incluye
 
-Este repositorio contiene una plantilla de sitio web estilo **"Solid State"**, diseñada con HTML5 UP. Es una plantilla multipágina con estética angular, ideal para blogs, portfolios o sitios personales. Incluye recursos visuales proporcionados por Unsplash, jQuery, Font Awesome y complementos como Scrollex y Responsive Tools.
+- Página principal (`index.html`) con proyectos destacados.
+- Página de contacto (`contact.html`) + formulario vía FormSubmit.
+- Álbum estático (`album.html`) y versión conectada a Supabase (`album_db.html`).
+- Panel de administración (`admin.html`) para gestión de contenido/fotos.
+- Página de agradecimiento (`gracias.html`) y error (`404.html`).
 
----
+## Estructura actual
 
-##  Características principales
-
-- Diseño **responsivo** y estilo moderno basado en HTML5 y CSS3.
-- Compatibilidad con **SCSS**, ideal para personalización avanzada.
-- Integración con librerías populares:
-  - Imágenes de demostración: Unsplash
-  - Íconos: Font Awesome
-  - Efectos y animaciones: jQuery, Scrollex, Responsive Tools
-- Libre para uso personal o comercial bajo licencia **CCA 3.0**.
-- Hosting conectado directamente al repositorio gracias a GitHub Pages.
-- Dominio y DNS gestionados en NameCheap.
-
----
-
-##  Estructura del repositorio
-
-```
-Blog/
+```txt
+blog/
 ├── .github/
-│   └── workflows/        # (Opcional) Flujos de CI/CD
-├── assets/               # Recursos estáticos (imágenes, íconos, etc.)
-├── images/               # Imágenes utilizadas en plantillas
-├── elements.html         # Sección de elementos reutilizables
-├── generic.html          # Página genérica de demostración
-├── index.html            # Página principal
-├── LICENSE.txt           # Licencia: CCA 3.0
-└── README.txt            # Plantilla original de GitHub (última versión)
+│   └── workflows/
+├── assets/
+│   ├── css/
+│   └── js/
+├── images/
+├── 404.html
+├── admin.html
+├── album.html
+├── album_db.html
+├── contact.html
+├── gracias.html
+├── index.html
+├── LICENSE.txt
+└── README.md
 ```
 
----
+## Uso local
 
-##  Instalación
+```bash
+git clone https://github.com/gonzalomolinah/blog.git
+cd blog
+# abrir index.html o usar Live Server
+```
 
-1. Clona este repositorio:
-   ```bash
-   git clone https://github.com/gonzalomolinah/Blog.git
-   ```
+## Notas
 
-2. Abre `index.html` en tu navegador para visualizar la plantilla en acción.
-Nota: recomiendo usar la extensión Live Server para esto!
+- Se normalizaron rutas de imágenes/links para evitar dependencias innecesarias de `raw.githubusercontent.com`.
+- Se agregaron metadatos básicos de SEO/performance en las páginas principales.
 
----
+## Créditos
 
-##  Personalización
+- Plantilla: [HTML5 UP - Solid State](https://html5up.net/solid-state)
+- Íconos: Font Awesome
 
-- **Colores y tipografía**: Modifica los archivos CSS o SCSS según tu estilo deseado.
-- **Imágenes**: Sustituye imágenes en `assets/` o `images/` por las tuyas.
-- **Contenido**: Personaliza el HTML (`index.html`, `generic.html`) para adaptarlo a tu blog o proyecto.
-- **Interactividad**: Explora y ajusta configuraciones de Scrollex o Responsive Tools según tus necesidades.
+## Contacto
 
----
-
-##  Licencia
-
-Este proyecto está bajo la licencia **Creative Commons Attribution 3.0 (CCA 3.0)**. Puedes usarlo libremente tanto para proyectos personales como comerciales, citando al autor original de la plantilla.
-
----
-
-##  Créditos
-
-- **Tema**: "Solid State" por HTML5 UP — html5up.net | @ajlkn  
-- **Imágenes de demostración**: Unsplash (CC0)  
-- **Íconos**: Font Awesome  
-- **Scripts y complementos**: jQuery, Scrollex, Responsive Tools  
-
----
-
----
-
-##  Contacto
-
-Si tienes dudas, sugerencias o colaboraciones, no dudes en contactarme.
-yo@gonzalomolina.space
+- Email: yo@gonzalomolina.space
+- Instagram: @gonzalomolinah
